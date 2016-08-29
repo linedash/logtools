@@ -57,11 +57,20 @@ def geoip_lookup(ip, path):
     proc = subprocess.Popen(['geoiplookup', '-F', path, ip],
                             stdout=subprocess.PIPE)
     for line in proc.stdout:
-        _, data = line.split(': ', 1)
-        if data == 'IP Address not found':
-            return None
-        cc, _ = data.split(',', 1)
-        return cc
+        return geoip_parse(line)
+
+
+def geoip_parse(line):
+    r"""
+    >>> geoip_parse("GeoIP Country Edition: IP Address not found\n") is None
+    True
+    >>> geoip_parse("GeoIP Country Edition: ES, Spain\n")
+    'ES'
+    """
+    _, data = line.strip().split(': ', 1)
+    if data == 'IP Address not found':
+        return None
+    return data.split(',', 1)[0]
 
 
 def filter_logs(log_iter, geoip_db):
