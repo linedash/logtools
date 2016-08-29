@@ -23,7 +23,7 @@ def glob_logs(webroots_path):
     Glob the log files.
     """
     paths = []
-    for filename in ('access.log', 'ssl_access.log'):
+    for filename in ('access_log', 'ssl_access_log'):
         paths += glob.glob(os.path.join(webroots_path, '*/log', filename))
     return paths
 
