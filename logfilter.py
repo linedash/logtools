@@ -33,8 +33,7 @@ def follow_logs(paths):
     Follow the given list of logs.
     """
     proc = subprocess.Popen(['tail', '-F', '-n0'] + paths,
-                            stdout=subprocess.PIPE,
-                            stderr=None)
+                            stdout=subprocess.PIPE)
 
     def at_exit():
         os.kill(proc.pid, signal.SIGTERM)
@@ -55,7 +54,8 @@ def geoip_lookup(ip, path):
     # short timespan, so some kind of memoisation would be good. This seems
     # like a good option that doesn't require any external dependencies:
     # http://seanblanchfield.com/python-memoize-with-expiry/
-    proc = subprocess.Popen(['geoiplookup', '-F', path, ip])
+    proc = subprocess.Popen(['geoiplookup', '-F', path, ip],
+                            stdout=subprocess.PIPE)
     for line in proc.stdout:
         _, data = line.split(': ', 1)
         if data == 'IP Address not found':
