@@ -46,7 +46,7 @@ def follow_logs(paths):
             yield match.groupdict()
 
 
-def geoip_lookup(ip, path):
+def geoip_lookup(ip, path, default=None):
     """
     Do a GeoIP lookup of an IP against a given database.
     """
@@ -57,10 +57,10 @@ def geoip_lookup(ip, path):
     proc = subprocess.Popen(['geoiplookup', '-F', path, ip],
                             stdout=subprocess.PIPE)
     for line in proc.stdout:
-        return geoip_parse(line)
+        return geoip_parse(line, default)
 
 
-def geoip_parse(line):
+def geoip_parse(line, default=None):
     r"""
     >>> geoip_parse("GeoIP Country Edition: IP Address not found\n") is None
     True
@@ -69,7 +69,7 @@ def geoip_parse(line):
     """
     _, data = line.strip().split(': ', 1)
     if data == 'IP Address not found':
-        return None
+        return default
     return data.split(',', 1)[0]
 
 
@@ -78,9 +78,7 @@ def filter_logs(log_iter, geoip_db):
     Filter the logs, adding the country code corresponding to the IP.
     """
     for item in log_iter:
-        cc = geoip_lookup(item['ip'], geoip_db)
-        if cc is None:
-            continue
+        cc = geoip_lookup(item['ip'], geoip_db, default='O1')
         item['cc'] = cc
         yield item
 
