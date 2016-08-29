@@ -69,7 +69,7 @@ def filter_logs(log_iter, geoip_db):
     Filter the logs, adding the country code corresponding to the IP.
     """
     for item in log_iter:
-        cc = geoip_lookup(item['id'], geoip_db)
+        cc = geoip_lookup(item['ip'], geoip_db)
         if cc is None:
             continue
         item['cc'] = cc
