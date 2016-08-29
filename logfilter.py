@@ -72,9 +72,9 @@ def main():
     # Get the webroots path as first argument
     webroots = sys.argv[1]
     # Get the GeoIP database path as the second argument, if present.
-    geoip_db = 'GeoIP.dat' if len(sys.argv == 2) else sys.argv[2]
+    geoip_db = 'GeoIP.dat' if len(sys.argv) == 2 else sys.argv[2]
 
-    for item in filter_logs(follow_logs(glob_logs(webroots), geoip_db)):
+    for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
         print "%(cc)s %(ip)s %(method) %(uri)" % item
 
     return 0
