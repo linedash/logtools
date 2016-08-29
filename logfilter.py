@@ -32,7 +32,7 @@ def follow_logs(paths):
     """
     Follow the given list of logs.
     """
-    proc = subprocess.Popen(['tail', '-F', '-n0'] + paths,
+    proc = subprocess.Popen(['tail', '-q', '-F', '-n0'] + paths,
                             stdout=subprocess.PIPE)
 
     def at_exit():
