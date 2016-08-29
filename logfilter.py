@@ -1,9 +1,13 @@
+#!/usr/bin/env python
 """
 """
 
+import atexit
 import glob
+import os
 import os.path
 import re
+import signal
 import subprocess
 import sys
 
@@ -19,7 +23,7 @@ def glob_logs(webroots_path):
     Glob the log files.
     """
     paths = []
-    for filename in ('access_log', 'ssl_access_log'):
+    for filename in ('access.log', 'ssl_access.log'):
         paths += glob.glob(os.path.join(webroots_path, '*/log', filename))
     return paths
 
@@ -28,7 +32,15 @@ def follow_logs(paths):
     """
     Follow the given list of logs.
     """
-    proc = subprocess.Popen(['tail', '-F', '-n0'] + paths)
+    proc = subprocess.Popen(['tail', '-F', '-n0'] + paths,
+                            stdout=subprocess.PIPE,
+                            stderr=None)
+
+    def at_exit():
+        os.kill(proc.pid, signal.SIGTERM)
+        proc.wait()
+    atexit.register(at_exit)
+
     for line in proc.stdout:
         match = LOG_LINE.match(line)
         if match is not None:
