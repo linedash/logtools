@@ -87,7 +87,7 @@ def main():
     geoip_db = 'GeoIP.dat' if len(sys.argv) == 2 else sys.argv[2]
 
     for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
-        print "%(cc)s %(ip)s %(method) %(uri)" % item
+        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
 
     return 0
 
