@@ -111,12 +111,12 @@ def main():
     #auto-detect host type and set webroot accordingly.  Also accept from first argument
     host_type = findhost.get_host_type(socket.getfqdn())
     if host_type == "linweb":
-      webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
+        webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
     elif host_type == "lwng":
-      webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
+        webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
     elif host_type == "other":
-      print >> sys.stderr, "Invalid host type for script"
-      return 1
+        print >> sys.stderr, "Invalid host type for script"
+        return 1
 
     #if len(sys.argv) < 2:
     #    print >> sys.stderr, "Please provide a webroots path."
