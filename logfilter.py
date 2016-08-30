@@ -17,20 +17,6 @@ LOG_LINE = re.compile(
     r'^(?P<ip>\S+) \S+ \S+ \[[^\]]+?\] '
     r'"(?P<method>\S+) (?P<uri>\S+?) HTTP/')
 
-def main():
-    if len(sys.argv) < 2:
-        print >> sys.stderr, "Please provide a webroots path."
-        return 1
-
-    # Get the webroots path as first argument
-    webroots = sys.argv[1]
-    # Get the GeoIP database path as the second argument, if present.
-    geoip_db = 'GeoIP.dat' if len(sys.argv) == 2 else sys.argv[2]
-
-    for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
-        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
-
-    return 0
 
 def filter_logs(log_iter, geoip_db):
     """
@@ -115,6 +101,23 @@ def geoip_parse(line):
     if data == 'IP Address not found':
         return None
     return data.split(',', 1)[0]
+
+
+def main():
+    if len(sys.argv) < 2:
+        print >> sys.stderr, "Please provide a webroots path."
+        return 1
+
+    # Get the webroots path as first argument
+    webroots = sys.argv[1]
+    # Get the GeoIP database path as the second argument, if present.
+    geoip_db = 'GeoIP.dat' if len(sys.argv) == 2 else sys.argv[2]
+
+    for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
+        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
+
+    return 0
+
 
 if __name__ == '__main__':
     sys.exit(main())
