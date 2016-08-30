@@ -107,35 +107,6 @@ def geoip_parse(line):
     return data.split(',', 1)[0]
 
 
-def main():
-    #auto-detect host type and set webroot accordingly.  Also accept from first argument
-    host_type = findhost.get_host_type(socket.getfqdn())
-    if host_type == "linweb":
-        webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
-    elif host_type == "lwng":
-        webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
-    elif host_type == "other":
-        print >> sys.stderr, "Invalid host type for script"
-        return 1
-
-    #if len(sys.argv) < 2:
-    #    print >> sys.stderr, "Please provide a webroots path."
-    #    return 1
-
-    # Get the GeoIP database path as the second argument, if present.
-    geoip_db = sys.argv[2] if len(sys.argv) >= 3 else "GeoIP.dat"
-
-    for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
-        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
-
-    return 0
-
-
-
-r'''
-I don't care if this is done wrong.  Leave it alone.
-'''
-
 def findlwngwebroot():
     p1 = subprocess.Popen(["redis-cli", '-s', '/var/lib/redis/redis.sock', 'KEYS', 'website-by-name:*'], stdout=subprocess.PIPE)
     p2 = subprocess.Popen(["tail", "-1"], stdin=p1.stdout, stdout=subprocess.PIPE)
@@ -153,6 +124,25 @@ def findlwngwebroot():
     lwngwebroot = "/var/www/vhosts/" + lwng_webroot_random_string
     return lwngwebroot
 
+
+def main():
+    #auto-detect host type and set webroot accordingly.  Also accept from first argument
+    host_type = findhost.get_host_type(socket.getfqdn())
+    if host_type == "linweb":
+        webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
+    elif host_type == "lwng":
+        webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
+    elif host_type == "other":
+        print >> sys.stderr, "Invalid host type for script"
+        return 1
+
+    # Get the GeoIP database path as the second argument, if present.
+    geoip_db = sys.argv[2] if len(sys.argv) >= 3 else "GeoIP.dat"
+
+    for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
+        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
+
+    return 0
 
 
 if __name__ == '__main__':
