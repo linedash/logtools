@@ -109,11 +109,12 @@ def geoip_parse(line):
 
 def main():
     #auto-detect host type and set webroot accordingly.  Also accept from first argument
-    if findhost.main() == "linweb":
-      webroots = "/usr/local/pem/vhosts/" if len(sys.argv) == 2 else sys.argv[1]
-    elif findhost.main() == "lwng":
-      webroots = findlwngwebroot() if len(sys.argv) == 2 else sys.argv[1]
-    elif findhost.main() == "other":
+    host_type = findhost.get_host_type(socket.getfqdn())
+    if host_type == "linweb":
+      webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
+    elif host_type == "lwng":
+      webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
+    elif host_type == "other":
       print >> sys.stderr, "Invalid host type for script"
       return 1
 
@@ -122,7 +123,7 @@ def main():
     #    return 1
 
     # Get the GeoIP database path as the second argument, if present.
-    geoip_db = 'GeoIP.dat' if len(sys.argv) == 2 else sys.argv[2]
+    geoip_db = sys.argv[2] if len(sys.argv) >= 2 else "GeoIP.dat"
 
     for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
         print "%(cc)s %(ip)s %(method)s %(uri)s" % item
