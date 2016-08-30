@@ -8,9 +8,10 @@ import os
 import os.path
 import re
 import signal
+import socket
 import subprocess
 import sys
-import socket
+
 
 # Rough and ready regex for parsing log lines.
 LOG_LINE = re.compile(
