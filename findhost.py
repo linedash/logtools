@@ -2,19 +2,29 @@
 """
 """
 
-import socket
 import re
+import socket
+import sys
 
-hostname = socket.getfqdn()
+
+_TYPES = {
+    'pemlinweb': 'linweb',
+    'pemlinng': 'lwng',
+    'pemdublinng': 'lwng',
+}
+
+
+def get_host_type(hostname):
+    for prefix, host_type in _TYPES.iteritems():
+        if hostname.startswith(prefix):
+            return host_type
+    return 'other'
+
 
 def main():
-  if re.match('^pemlinweb', hostname):
-    hosttype = "linweb"
-  elif re.match('^pemlinng', hostname):
-    hosttype = "lwng"
-  elif re.match('^pemdublinng', hostname):
-    hosttype = "lwng"
-  else:
-    hosttype = "other"
+    print get_host_type(socket.getfqdn())
+    return 0
 
-  return hosttype
+
+if __name__ == '__main__':
+    sys.exit(main())
