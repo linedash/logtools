@@ -12,6 +12,7 @@ import socket
 import subprocess
 import sys
 
+import findhost
 
 # Rough and ready regex for parsing log lines.
 LOG_LINE = re.compile(
@@ -107,12 +108,19 @@ def geoip_parse(line):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print >> sys.stderr, "Please provide a webroots path."
-        return 1
+    #auto-detect host type and set webroot accordingly.  Also accept from first argument
+    if findhost.main() == "linweb":
+      webroots = "/usr/local/pem/vhosts/" if len(sys.argv) == 2 else sys.argv[1]
+    elif findhost.main() == "lwng":
+      webroots = findlwngwebroot() if len(sys.argv) == 2 else sys.argv[1]
+    elif findhost.main() == "other":
+      print >> sys.stderr, "Invalid host type for script"
+      return 1
 
-    # Get the webroots path as first argument
-    webroots = sys.argv[1]
+    #if len(sys.argv) < 2:
+    #    print >> sys.stderr, "Please provide a webroots path."
+    #    return 1
+
     # Get the GeoIP database path as the second argument, if present.
     geoip_db = 'GeoIP.dat' if len(sys.argv) == 2 else sys.argv[2]
 
@@ -120,6 +128,30 @@ def main():
         print "%(cc)s %(ip)s %(method)s %(uri)s" % item
 
     return 0
+
+
+
+r'''
+I don't care if this is done wrong.  Leave it alone.
+'''
+
+def findlwngwebroot():
+    p1 = subprocess.Popen(["redis-cli", '-s', '/var/lib/redis/redis.sock', 'KEYS', 'website-by-name:*'], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(["tail", "-1"], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    output,err = p2.communicate()
+    p2.stdout.close()
+    p3 = subprocess.Popen(["redis-cli", '-s', '/var/lib/redis/redis.sock', 'get', output.strip()], stdout=subprocess.PIPE)
+    p4 = subprocess.Popen(['redis-decode-obj', '--type=vh_info_t'], stdin=p3.stdout, stdout=subprocess.PIPE)
+    p3.stdout.close()
+    p5 = subprocess.Popen(['awk', '/m_homedir/ { gsub(/"/,"") ; print $2 }'], stdin=p4.stdout, stdout=subprocess.PIPE)
+    p4.stdout.close()
+    output2,err = p5.communicate()
+    p5.stdout.close()
+    lwng_webroot_random_string = output2.split('/',5)[4]
+    lwngwebroot = "/var/www/vhosts/" + lwng_webroot_random_string
+    return lwngwebroot
+
 
 
 if __name__ == '__main__':
