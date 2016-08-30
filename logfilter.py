@@ -113,7 +113,7 @@ def main():
     if host_type == "linweb":
       webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
     elif host_type == "lwng":
-      webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
+      webroots = sys.argv[1] if len(sys.argv) >= 3 else findlwngwebroot()
     elif host_type == "other":
       print >> sys.stderr, "Invalid host type for script"
       return 1
