@@ -28,6 +28,7 @@ def filter_logs(log_iter, geoip_db):
         item['cc'] = cc
         yield item
 
+
 def follow_logs(paths):
     """
     Follow the given list of logs.
@@ -45,6 +46,7 @@ def follow_logs(paths):
         if match is not None:
             yield match.groupdict()
 
+
 def glob_logs(webroots_path):
     """
     Glob the log files.
@@ -54,21 +56,21 @@ def glob_logs(webroots_path):
         paths += glob.glob(os.path.join(webroots_path, '*/log', filename))
     return paths
 
-    
+
 def is_valid_addr(addr, family):
-   try:
-       socket.inet_pton(family, addr)
-   except socket.error:
-       return False
-   return True
+    try:
+        socket.inet_pton(family, addr)
+    except socket.error:
+        return False
+    return True
 
 
 def is_valid_ipv4(addr):
-   return is_valid_addr(addr, socket.AF_INET)
+    return is_valid_addr(addr, socket.AF_INET)
 
 
 def is_valid_ipv6(addr):
-   return is_valid_addr(addr, socket.AF_INET6)
+    return is_valid_addr(addr, socket.AF_INET6)
 
 
 def geoip_lookup(ip, path):
@@ -80,15 +82,16 @@ def geoip_lookup(ip, path):
     # like a good option that doesn't require any external dependencies:
     # http://seanblanchfield.com/python-memoize-with-expiry/
     if is_valid_ipv4(ip):
-      proc = subprocess.Popen(['geoiplookup', '-f', path, ip],
-                              stdout=subprocess.PIPE)
+        proc = subprocess.Popen(['geoiplookup', '-f', path, ip],
+                                stdout=subprocess.PIPE)
     elif is_valid_ipv6(ip):
-      proc = subprocess.Popen(['geoiplookup6', '-f',  'GeoIPv6.dat', ip],
-                              stdout=subprocess.PIPE)
+        proc = subprocess.Popen(['geoiplookup6', '-f', 'GeoIPv6.dat', ip],
+                                stdout=subprocess.PIPE)
     else:
-      print "IP address : %s not parsable"
+        print >> sys.stderr, "IP address : %s not parsable"
     for line in proc.stdout:
         return geoip_parse(line)
+
 
 def geoip_parse(line):
     r"""
@@ -97,7 +100,6 @@ def geoip_parse(line):
     >>> geoip_parse("GeoIP Country Edition: ES, Spain\n")
     'ES'
     """
-    #print >> sys.stderr, "[%s]" % line
     _, data = line.strip().split(': ', 1)
     if data == 'IP Address not found':
         return None
