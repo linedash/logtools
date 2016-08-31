@@ -3,6 +3,7 @@
 """
 
 import atexit
+import collections
 import glob
 import os
 import os.path
@@ -18,6 +19,11 @@ import findhost
 LOG_LINE = re.compile(
     r'^(?P<ip>\S+) \S+ \S+ \[[^\]]+?\] '
     r'"(?P<method>\S+) (?P<uri>\S+?) HTTP/')
+
+# Threat list file containing short-form country-code, threat level, full country code name.
+# We discard the third field.  It exists for reference purposes only.
+
+threatfile = "threatfile"
 
 
 def filter_logs(log_iter, geoip_db):
@@ -124,10 +130,19 @@ def findlwngwebroot():
     lwngwebroot = "/var/www/vhosts/" + lwng_webroot_random_string
     return lwngwebroot
 
+def threatlist_import():
+    threat = {}
+    with open("threatfile") as f:                 
+        for line in f:                              
+            (key, val, _) = line.strip().split(' ',2) 
+            threat.update({key: val})
+
 
 def main():
     #auto-detect host type and set webroot accordingly.  Also accept from first argument
     host_type = findhost.get_host_type(socket.getfqdn())
+    #Import threat list
+    threatlist_import()
     if host_type == "linweb":
         webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
     elif host_type == "lwng":
