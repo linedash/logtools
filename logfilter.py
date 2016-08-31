@@ -140,17 +140,14 @@ def threatlist_import():
             threat[key] = val
 
 
-def get_current_load():
-    current_load = int(os.getloadavg()[0])
+def monitor_load():
+    s there the equiv of tracurrent_load = int(os.getloadavg()[0])
+    print current_load
+    start_load_monitor()
 
 
-def load_timer():
-    t = Timer(15.0, load_timer)
-    get_current_load()
-    t.start()
-
-#def presetmonitor():
-    
+def start_load_monitor():
+    threading.Timer(2.0, monitor_load).start()
 
 
 def main():
@@ -158,7 +155,7 @@ def main():
     host_type = findhost.get_host_type(socket.getfqdn())
     # Import threat list
     threatlist_import()
-    load_timer()
+    monitor_load()
     if host_type == "linweb":
         webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
     elif host_type == "lwng":
