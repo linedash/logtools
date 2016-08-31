@@ -24,9 +24,9 @@ LOG_LINE = re.compile(
 
 
 regexes = {
-    "wp-login": re.compile("wp-login.php"),
-    "xmlrpc": re.compile("xmlrpc.php"),
-    "administrator": re.compile("administrator.php$"),
+    "wp-login": re.compile("wp-login\.php"),
+    "xmlrpc": re.compile("xmlrpc\.php"),
+    "administrator": re.compile("administrator\.php$"),
 }
 
 matched = collections.defaultdict(dict)
