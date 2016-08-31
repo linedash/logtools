@@ -144,13 +144,14 @@ def findlwngwebroot():
     lwngwebroot = "/var/www/vhosts/" + lwng_webroot_random_string
     return lwngwebroot
 
-
+# Creates threat[COUNTRYCODE] = [THREAT-LEVEL]
 def threatlist_import():
     threat = {}
     with open("threatfile") as f:                 
         for line in f:                              
             key, val, _ = line.strip().split(' ',2) 
             threat[key] = val
+            return threat
 
 
 def monitor_load():
@@ -160,8 +161,9 @@ def monitor_load():
 
 
 def start_load_monitor():
-    threading.Timer(2.0, monitor_load).start()
-
+    thr = threading.Timer(2.0, monitor_load)
+    thr.setDaemon(True)
+    thr.start()
 
 # Checked against preset regexes, stores in form matched[regexname][ip] = [epoch-time]
 # i.e ; matched[wp-login][1.2.3.4] = [1472653064]
