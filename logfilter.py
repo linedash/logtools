@@ -12,6 +12,7 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
 
 import findhost
 
@@ -135,18 +136,27 @@ def threatlist_import():
     threat = {}
     with open("threatfile") as f:                 
         for line in f:                              
-            (key, val, _) = line.strip().split(' ',2) 
-            threat.update({key: val})
+            key, val, _ = line.strip().split(' ',2) 
+            threat[key] = val
 
 
 def get_current_load():
     current_load = int(os.getloadavg()[0])
 
 
+def load_timer():
+    t = Timer(15.0, load_timer)
+    get_current_load()
+    t.start()
+
+#def presetmonitor():
+    
+
+
 def main():
-    #auto-detect host type and set webroot accordingly.  Also accept from first argument
+    # auto-detect host type and set webroot accordingly.  Also accept from first argument
     host_type = findhost.get_host_type(socket.getfqdn())
-    #Import threat list
+    # Import threat list
     threatlist_import()
     if host_type == "linweb":
         webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
