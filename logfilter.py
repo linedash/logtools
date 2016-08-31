@@ -12,6 +12,7 @@ import signal
 import socket
 import subprocess
 import sys
+import time
 import threading
 
 import findhost
@@ -20,6 +21,18 @@ import findhost
 LOG_LINE = re.compile(
     r'^(?P<ip>\S+) \S+ \S+ \[[^\]]+?\] '
     r'"(?P<method>\S+) (?P<uri>\S+?) HTTP/')
+
+
+regexes = {
+    "wp-login": re.compile("wp-login.php"),
+    "xmlrpc": re.compile("xmlrpc.php"),
+    "administrator": re.compile("administrator.php$"),
+}
+
+matched = collections.defaultdict(dict)
+
+
+
 
 # Threat list file containing short-form country-code, threat level, full country code name.
 # We discard the third field.  It exists for reference purposes only.
@@ -141,7 +154,7 @@ def threatlist_import():
 
 
 def monitor_load():
-    s there the equiv of tracurrent_load = int(os.getloadavg()[0])
+    current_load = int(os.getloadavg()[0]) 
     print current_load
     start_load_monitor()
 
@@ -150,11 +163,22 @@ def start_load_monitor():
     threading.Timer(2.0, monitor_load).start()
 
 
+# Checked against preset regexes, stores in form matched[regexname][ip] = [epoch-time]
+# i.e ; matched[wp-login][1.2.3.4] = [1472653064]
+def preset_monitor(uri,ip):
+    for key, regex in regexes.iteritems():
+        if regex.search(uri):
+            print "matched key", key
+            matched[key][ip] = int(time.time())
+            print matched[key][ip]
+
+
 def main():
     # auto-detect host type and set webroot accordingly.  Also accept from first argument
     host_type = findhost.get_host_type(socket.getfqdn())
     # Import threat list
     threatlist_import()
+    # Start timer for checking load
     monitor_load()
     if host_type == "linweb":
         webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
@@ -168,7 +192,8 @@ def main():
     geoip_db = sys.argv[2] if len(sys.argv) >= 3 else "GeoIP.dat"
 
     for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
-        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
+        preset_monitor(item['uri'],item['ip'])
+#        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
 
     return 0
 
