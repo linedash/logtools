@@ -158,6 +158,7 @@ def main():
     host_type = findhost.get_host_type(socket.getfqdn())
     # Import threat list
     threatlist_import()
+    load_timer()
     if host_type == "linweb":
         webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
     elif host_type == "lwng":
