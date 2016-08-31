@@ -2,6 +2,9 @@
 """
 """
 
+#Fix for with open(file) for 2.4
+from __future__ import with_statement
+
 import atexit
 import collections
 import glob
@@ -16,6 +19,7 @@ import time
 import threading
 
 import findhost
+
 
 # Rough and ready regex for parsing log lines.
 LOG_LINE = re.compile(
