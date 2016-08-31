@@ -130,12 +130,17 @@ def findlwngwebroot():
     lwngwebroot = "/var/www/vhosts/" + lwng_webroot_random_string
     return lwngwebroot
 
+
 def threatlist_import():
     threat = {}
     with open("threatfile") as f:                 
         for line in f:                              
             (key, val, _) = line.strip().split(' ',2) 
             threat.update({key: val})
+
+
+def get_current_load():
+    current_load = int(os.getloadavg()[0])
 
 
 def main():
