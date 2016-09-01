@@ -30,9 +30,7 @@ regexes = {
     "administrator": re.compile("administrator\.php$"),
 }
 
-#matched = collections.defaultdict(dict)
-matched = collections.defaultdict(lambda: collections.defaultdict(int))
-
+matched = collections.defaultdict(lambda: collections.defaultdict(list))
 
 # Threat list file containing short-form country-code, threat level, full country code name.
 # We discard the third field.  It exists for reference purposes only.
@@ -174,7 +172,7 @@ def preset_monitor(uri,ip):
     for key, regex in regexes.iteritems():
         if regex.search(uri):
             print "matched key", key
-            matched[key][ip] = int(time.time())
+            matched[key][ip].append(int(time.time()))
             print matched[key][ip]
             if len(matched[key]) >= 2:
                 cleanup_matches(matched[key])
@@ -193,7 +191,7 @@ def main():
     # Start timer for checking load
     monitor_load()
 
-
+    # Argument handlers
     if len(sys.argv) >= 2:
         webroots = sys.argv[1]
     elif host_type == "linweb":
@@ -212,7 +210,7 @@ def main():
 
     for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
         preset_monitor(item['uri'],item['ip'])
-#        print "%(cc)s %(ip)s %(method)s %(uri)s" % item
+#       print "%(cc)s %(ip)s %(method)s %(uri)s" % item
 
     return 0
 
