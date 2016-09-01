@@ -168,19 +168,34 @@ def start_load_monitor():
 
 # Checked against preset regexes, stores in form matched[regexname][ip] = [epoch-time]
 # i.e ; matched[wp-login][1.2.3.4] = [1472653064]
-def preset_monitor(uri,ip):
+def preset_monitor(uri,ip,cc):
     for key, regex in regexes.iteritems():
         if regex.search(uri):
             print "matched key", key
             matched[key][ip].append(int(time.time()))
             print matched[key][ip]
-            if len(matched[key]) >= 2:
-                cleanup_matches(matched[key])
+            if len(matched[key][ip]) >= 2:
+                cleanup_matches(cc,key,ip,matched[key][ip])
 
-def cleanup_matches(match):
-    print "Match =", len(match)
-    print "Cleanup called on", match
-    pass
+def cleanup_matches(cc,key,ip,match):
+    print "Match =", cc, key, ip, len(match)
+    curtime = int(time.time())
+    print curtime
+    print "Cleanup called on", ip, match
+    flagged = 0
+    for hit_time in match:
+        if curtime - hit_time <= 60:
+            flagged += 1
+        if flagged >= 2:
+            print "Blocking %s with %s bad flags"% (ip, flagged)
+            print type(matched[key][ip])
+            print matched[key][ip]
+            block_single_ipv4(ip)
+            del matched[key][ip]
+            break
+
+def block_single_ipv4(ip):
+    p1 = subprocess.Popen(["iptables", "-A", "CHINATEST", "-s", ip, "-j", "DROP"])
 
 
 def main():
@@ -209,7 +224,7 @@ def main():
         geoip_db = sys.argv[2]
 
     for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
-        preset_monitor(item['uri'],item['ip'])
+        preset_monitor(item['uri'],item['ip'],item['cc'])
 #       print "%(cc)s %(ip)s %(method)s %(uri)s" % item
 
     return 0
