@@ -199,15 +199,28 @@ def cleanup_matches(cc,key,ip,match):
             print "Blocking %s with %s bad flags"% (ip, flagged)
             print type(matched[key][ip])
             print matched[key][ip]
-            block_single_ipv4(ip)
+            block_single_ip(ip)
             should_delete = True
             return should_delete
             break
 
 
-# Function for blocking single IP in iptables.  No error checking, etc.
+# Handler to determine IPv4 / IPv6 for blocker
+def block_single_ip(ip):
+    if is_valid_ipv4(ip):
+        block_single_ipv4(ip)
+    elif is_valid_ipv6(ip):
+        block_single_ipv6(ip)
+
+
+# Function for blocking single IPv4 IP in iptables.  No error checking, etc.
 def block_single_ipv4(ip):
     p1 = subprocess.Popen(["iptables", "-A", "CHINATEST", "-s", ip, "-j", "DROP"])
+    print "Blocked: ", ip
+
+
+# Function for blocking single IPv6 IP in iptables.  No error checking.
+    p1 = subprocess.Popen(["ip6tables", "-A", "CHINATEST", "-s", ip, "-j", "DROP"])
     print "Blocked: ", ip
 
 
