@@ -24,12 +24,14 @@ LOG_LINE = re.compile(
     r'"(?P<method>\S+) (?P<uri>\S+?) HTTP/')
 
 
+# Preset attack types in regex form
 regexes = {
     "wp-login": re.compile("wp-login\.php"),
     "xmlrpc": re.compile("xmlrpc\.php"),
     "administrator": re.compile("administrator\.php$"),
 }
 
+# Bag of dics
 matched = collections.defaultdict(lambda: collections.defaultdict(list))
 
 
@@ -180,7 +182,7 @@ def preset_monitor(uri,ip,cc):
             matched[key][ip].append(int(time.time()))
             print matched[key][ip]
             if len(matched[key][ip]) >= 2:
-                if cleanup_matches(cc,key,ip,matched[key][ip])
+                if cleanup_matches(cc,key,ip,matched[key][ip]):
                     del matched[key][ip]
 
 
