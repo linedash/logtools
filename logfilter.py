@@ -181,6 +181,7 @@ def preset_monitor(uri,ip,cc):
             print "matched key", key
             matched[key][ip].append(int(time.time()))
             print matched[key][ip]
+            # If single IP has more than X hits for a given preset attack type - pass to cleanup
             if len(matched[key][ip]) >= 2:
                 if cleanup_matches(cc,key,ip,matched[key][ip]):
                     del matched[key][ip]
@@ -191,16 +192,16 @@ def cleanup_matches(cc,key,ip,match):
     print "Match =", cc, key, ip, len(match)
     curtime = int(time.time())
     print curtime
-    print "Cleanup called on", ip, match
+    print "Cleanup called on %s, for %s type (%s)"% (ip, key, match)
     flagged = 0
     should_delete = False
     for hit_time in match:
+        # Time num hits should be within from curtime (i.e; X hits in Y seconds)
         if curtime - hit_time <= 60:
             flagged += 1
+        # Num hits within above timeframe
         if flagged >= 2:
-            print "Blocking %s with %s bad flags"% (ip, flagged)
-            print type(matched[key][ip])
-            print matched[key][ip]
+            print "Blocking %s with %s bad flags (%s)"% (ip, flagged, matched[key][ip])
             block_single_ip(ip)
             should_delete = True
             return should_delete
