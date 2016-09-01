@@ -218,12 +218,13 @@ def block_single_ip(ip):
 # Function for blocking single IPv4 IP in iptables.  No error checking, etc.
 def block_single_ipv4(ip):
     p1 = subprocess.Popen(["iptables", "-A", "CHINATEST", "-s", ip, "-j", "DROP"])
-    print "Blocked: ", ip
+    print "Blocked ipv4:", ip
 
 
 # Function for blocking single IPv6 IP in iptables.  No error checking.
+def block_single_ipv6(ip):
     p1 = subprocess.Popen(["ip6tables", "-A", "CHINATEST", "-s", ip, "-j", "DROP"])
-    print "Blocked: ", ip
+    print "Blocked ipv6:", ip
 
 
 def main():
