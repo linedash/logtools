@@ -32,6 +32,7 @@ regexes = {
 
 matched = collections.defaultdict(lambda: collections.defaultdict(list))
 
+
 # Threat list file containing short-form country-code, threat level, full country code name.
 # We discard the third field.  It exists for reference purposes only.
 
@@ -142,6 +143,7 @@ def findlwngwebroot():
     lwngwebroot = "/var/www/vhosts/" + lwng_webroot_random_string
     return lwngwebroot
 
+
 # Creates threat[COUNTRYCODE] = [THREAT-LEVEL]
 def threatlist_import():
     threat = {}
@@ -155,16 +157,19 @@ def threatlist_import():
     return threat
 
 
+# Threaded load monitor
 def monitor_load():
     current_load = int(os.getloadavg()[0]) 
     print current_load
     start_load_monitor()
 
 
+# Timer for load monitor
 def start_load_monitor():
-    thr = threading.Timer(2.0, monitor_load)
+    thr = threading.Timer(5.0, monitor_load)
     thr.setDaemon(True)
     thr.start()
+
 
 # Checked against preset regexes, stores in form matched[regexname][ip] = [epoch-time]
 # i.e ; matched[wp-login][1.2.3.4] = [1472653064]
@@ -175,14 +180,18 @@ def preset_monitor(uri,ip,cc):
             matched[key][ip].append(int(time.time()))
             print matched[key][ip]
             if len(matched[key][ip]) >= 2:
-                cleanup_matches(cc,key,ip,matched[key][ip])
+                if cleanup_matches(cc,key,ip,matched[key][ip])
+                    del matched[key][ip]
 
+
+# Function for checking when a single IP has more than X hits on preset attack types
 def cleanup_matches(cc,key,ip,match):
     print "Match =", cc, key, ip, len(match)
     curtime = int(time.time())
     print curtime
     print "Cleanup called on", ip, match
     flagged = 0
+    should_delete = False
     for hit_time in match:
         if curtime - hit_time <= 60:
             flagged += 1
@@ -191,11 +200,15 @@ def cleanup_matches(cc,key,ip,match):
             print type(matched[key][ip])
             print matched[key][ip]
             block_single_ipv4(ip)
-            del matched[key][ip]
+            should_delete = True
+            return should_delete
             break
 
+
+# Function for blocking single IP in iptables.  No error checking, etc.
 def block_single_ipv4(ip):
     p1 = subprocess.Popen(["iptables", "-A", "CHINATEST", "-s", ip, "-j", "DROP"])
+    print "Blocked: ", ip
 
 
 def main():
