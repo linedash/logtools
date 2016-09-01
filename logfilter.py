@@ -2,9 +2,6 @@
 """
 """
 
-#Fix for with open(file) for 2.4
-from __future__ import with_statement
-
 import atexit
 import collections
 import glob
@@ -33,9 +30,8 @@ regexes = {
     "administrator": re.compile("administrator\.php$"),
 }
 
-matched = collections.defaultdict(dict)
-
-
+#matched = collections.defaultdict(dict)
+matched = collections.defaultdict(lambda: collections.defaultdict(int))
 
 
 # Threat list file containing short-form country-code, threat level, full country code name.
@@ -151,11 +147,14 @@ def findlwngwebroot():
 # Creates threat[COUNTRYCODE] = [THREAT-LEVEL]
 def threatlist_import():
     threat = {}
-    with open("threatfile") as f:                 
-        for line in f:                              
-            key, val, _ = line.strip().split(' ',2) 
-            threat[key] = val
-            return threat
+    f = open('threatfile')
+    try:
+        for line in f:
+             key, val, _ = line.strip().split(' ', 2)
+             threat[key] = val
+    finally:
+        f.close()
+    return threat
 
 
 def monitor_load():
@@ -177,6 +176,13 @@ def preset_monitor(uri,ip):
             print "matched key", key
             matched[key][ip] = int(time.time())
             print matched[key][ip]
+            if len(matched[key]) >= 2:
+                cleanup_matches(matched[key])
+
+def cleanup_matches(match):
+    print "Match =", len(match)
+    print "Cleanup called on", match
+    pass
 
 
 def main():
@@ -186,16 +192,23 @@ def main():
     threatlist_import()
     # Start timer for checking load
     monitor_load()
-    if host_type == "linweb":
-        webroots = sys.argv[1] if len(sys.argv) >= 2 else "/usr/local/pem/vhosts/"
-    elif host_type == "lwng":
-        webroots = sys.argv[1] if len(sys.argv) >= 2 else findlwngwebroot()
-    elif host_type == "other":
-        print >> sys.stderr, "Invalid host type for script"
-        return 1
 
+
+    if len(sys.argv) >= 2:
+        webroots = sys.argv[1]
+    elif host_type == "linweb":
+        webroots = "/usr/local/pem/vhosts/"
+    elif host_type == "lwng":
+        webroots = findlwngwebroot()
+    else:
+        print >> sys.stderr, "Invalid host type '%s' for script" % host_type
+        return 1
+    
     # Get the GeoIP database path as the second argument, if present.
-    geoip_db = sys.argv[2] if len(sys.argv) >= 3 else "GeoIP.dat"
+
+    geoip_db = "GeoIP.dat"
+    if len(sys.argv) >= 3: 
+        geoip_db = sys.argv[2]
 
     for item in filter_logs(follow_logs(glob_logs(webroots)), geoip_db):
         preset_monitor(item['uri'],item['ip'])
