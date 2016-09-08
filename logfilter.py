@@ -29,6 +29,7 @@ regexes = {
     "wp-login": re.compile("wp-login\.php"),
     "xmlrpc": re.compile("xmlrpc\.php"),
     "administrator": re.compile("administrator\.php$"),
+    "funion": re.compile("%2fuNiOn%2f"),
 }
 
 # Bag of dics
